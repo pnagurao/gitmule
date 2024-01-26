@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+xmlns="http://www.mulesoft.org/schema/mule/core"
+xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="4e03fb21-2eac-4a93-a5b5-9779f4cc631d" >
+<http:listener-connection host="0.0.0.0" port="8081" />
+</http:listener-config>
+<flow name="flow-subflow-privateFlow" doc:id="661a0694-4b71-4f77-b458-326ab09d492c" >
+<http:listener doc:name="Listener" doc:id="6c1d9469-b6c0-438e-ae46-9b756917c13e" config-ref="HTTP_Listener_config" path="/flow"/>
+<logger level="INFO" doc:name="Logger" doc:id="2f15a6cb-c94b-4ec2-a977-e33cf5c37b16" message="#[payload]"/>
+<logger level="INFO" doc:name="Logger" doc:id="460b4bfd-a718-4b55-83b5-3b3891790fee" message='"after 1st logger"'/>
+<logger level="INFO" doc:name="Logger" doc:id="325268b5-166f-41d0-ba0c-bb62fa758218" message='"2nd logger"'/>
+<ee:transform doc:name="Transform Message" doc:id="591feca2-3464-4ea0-b753-dca73a77b9a4" >
+<ee:message >
+<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+"finaldata": lookup("privateFlow", payload)
+}]]></ee:set-payload>
+</ee:message>
+</ee:transform>
+</flow>
+<sub-flow name="flow-subflow" doc:id="b10b4854-f35c-45d4-9994-8cd539213975" >
+<try doc:name="Try" doc:id="2fae8a70-0b0d-4862-b610-8f7c1b3ae508" >
+<logger level="INFO" doc:name="Logger" doc:id="7ec868ee-3aa0-486b-8e2a-38f2faca1f63" message="#[payload]" />
+<logger level="INFO" doc:name="Logger" doc:id="b2a279b7-36f3-4c1d-9a2c-2ae44cdec9cb" message='"subflow logger"' />
+<logger level="INFO" doc:name="Logger" doc:id="aae9f43c-e762-4800-bf0a-d8a40c3b06ae" message='"subflow logger2"' />
+<flow-ref doc:name="Flow Reference" doc:id="612629c1-d70e-4eee-93ec-0afcd814aca2" name="flow-subflow-privateFlow" />
+</try>
+</sub-flow>
+<flow name="privateFlow" doc:id="71fd8ab9-cec1-4c25-ac01-31ac035f63f4" >
+<set-payload value='#[payload ++ "mule"]' doc:name="Set Payload" doc:id="bc9bf6af-de74-4ba4-badf-8fdb32363ebc" />
+<logger level="INFO" doc:name="Logger" doc:id="4281fa25-aeb4-4be2-8ef9-c792cce39b74" message="#[payload]"/>
+</flow>
+</mule>
